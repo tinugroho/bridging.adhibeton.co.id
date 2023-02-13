@@ -115,7 +115,7 @@ class Api
 	public function loadJoNumber($JO_Number)
 	{
 		$last_post_id = $this->last_post_id($JO_Number);
-		$apiupdate = " and a.Createdate > '2021-08-02 17:00'";
+		$apiupdate = " and a.Createdate > '2023-02-13 00:00'";
 
 		//SELECT LOAD JO NUMBER
 		$query = "select a.Ticket_Id as Ticket_Id, a.index_load , Createdate as RecordDate, a.Qty_Jobmix as Load_Size, d.Jobmix_Code as Load_Item_Code , a.BP_ID as BP_ID, a.CreateBy, b.api, b.api_time_correction, a.Driver as Driver_Code, a.Truck as Truck_Code,b.bp_name, c.region_name
