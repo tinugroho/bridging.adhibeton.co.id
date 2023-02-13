@@ -1,0 +1,342 @@
+# Webalizer V2.23-08 Incremental Data - 12/23/2021 23:44:31
+2021 12 23 23 44 31
+302 259 13 78 3 9 18292574 38 10 0
+3 2 141 22 23
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+297 256 15318464 10 34 7
+5 3 2974110 3 4 3
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0 0 0
+0 0 0 0
+0 0 0 0
+0 0 0 0
+0 0 0 0
+0 0 0 0
+0 0 0 0
+1 1 991228 1
+2 1 991445 2
+0 0 0 0
+0 0 0 0
+0 0 0 0
+87 86 4666386 7
+0 0 0 0
+0 0 0 0
+0 0 0 0
+63 63 2443209 5
+0 0 0 0
+141 103 4243531 17
+0 0 0 0
+0 0 0 0
+0 0 0 0
+0 0 0 0
+1 1 991228 1
+7 4 3965547 5
+0
+0
+0
+259
+0
+0
+0
+0
+0
+0
+0
+1
+6
+0
+34
+0
+0
+0
+0
+0
+0
+2
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+0
+# -urls- 
+/nosee/themes/dot.gif
+1 4 0 172 0 0
+/nosee/themes/pmahomme/img/s_host.png
+1 1 0 591 0 0
+/nosee/themes/pmahomme/img/s_asci.png
+1 1 0 148 0 0
+/nosee/js/messages.php
+0 6 0 47526 0 1
+/nosee/js/vendor/codemirror/mode/sql/sql.js
+0 6 0 287988 0 0
+/nosee/js/dist/drag_drop_import.js
+0 5 0 49232 0 0
+/nosee/themes/pmahomme/img/s_db.png
+1 1 0 328 0 0
+/nosee/js/dist/config.js
+0 5 0 99824 0 0
+/nosee/js/dist/navigation.js
+0 5 0 218712 0 0
+/nosee/js/vendor/jquery/jquery-ui.min.js
+0 5 0 1014676 0 0
+/nosee/js/dist/functions.js
+0 5 0 643868 0 0
+/nosee/js/vendor/codemirror/addon/hint/sql-hint.js
+0 4 0 38416 0 0
+/nosee/themes/pmahomme/img/s_cog.png
+1 1 0 442 0 0
+/nosee/themes/pmahomme/img/b_import.png
+1 1 0 556 0 0
+/nosee/themes/pmahomme/jquery/jquery-ui.css
+0 7 0 182830 0 0
+/nosee/js/vendor/jquery/jquery-migrate.js
+0 4 0 75900 0 0
+/nosee/js/dist/menu_resizer.js
+0 5 0 28220 0 0
+/nosee/themes/pmahomme/img/s_rights.png
+1 1 0 461 0 0
+/nosee/themes/pmahomme/img/s_unlink.png
+1 1 26925920 589 0 0
+/nosee/themes/pmahomme/img/b_plus.png
+1 1 0 143 0 0
+/nosee/themes/pmahomme/img/b_plugin.png
+1 1 0 512 0 0
+/nosee/js/vendor/codemirror/addon/hint/show-hint.js
+0 5 0 95445 0 0
+/nosee/js/vendor/codemirror/lib/codemirror.js
+0 5 0 1593456 0 0
+/nosee/js/dist/rte.js
+0 5 0 200370 0 0
+/nosee/js/vendor/sprintf.js
+0 5 0 29636 0 0
+/nosee/themes/pmahomme/img/logo_left.png
+1 1 0 2713 0 0
+/nosee/js/dist/cross_framing_protection.js
+0 5 0 2095 0 0
+/nosee/themes/pmahomme/css/printview.css
+0 6 0 6960 0 0
+/nosee/js/dist/ajax.js
+0 5 0 125252 0 0
+/nosee/themes/pmahomme/img/s_vars.png
+1 1 0 523 0 0
+/nosee/themes/pmahomme/img/s_reload.png
+1 1 0 527 0 0
+/nosee/themes/pmahomme/img/b_sqlhelp.png
+1 1 0 512 0 0
+/nosee/
+0 15 0 52819 2 0
+/nosee/js/dist/keyhandler.js
+0 5 0 12012 0 0
+/nosee/themes/pmahomme/css/theme.css
+0 8 0 1288794 0 0
+/nosee/themes/pmahomme/img/s_error.png
+1 1 0 614 0 0
+/nosee/js/dist/console.js
+0 4 0 198624 0 0
+/nosee/js/vendor/jquery/jquery.ba-hashchange-2.0.js
+0 5 0 52525 0 0
+/nosee/js/vendor/bootstrap/bootstrap.bundle.min.js
+0 5 0 336608 0 0
+/nosee/js/vendor/codemirror/lib/codemirror.css
+0 7 0 43610 0 0
+/nosee/js/vendor/js.cookie.js
+0 5 0 15532 0 0
+/nosee/themes/pmahomme/img/s_link.png
+1 1 0 280 0 0
+/nosee/themes/pmahomme/img/s_top.png
+1 1 0 220 0 0
+/nosee/themes/pmahomme/img/b_help.png
+1 4 0 2115 0 0
+/nosee/themes/pmahomme/img/s_status.png
+1 1 0 600 0 0
+/nosee/themes/pmahomme/img/s_theme.png
+1 1 0 772 0 0
+/nosee/js/vendor/codemirror/addon/runmode/runmode.js
+0 5 0 13865 0 0
+/nosee/themes/pmahomme/img/b_home.png
+1 1 0 734 0 0
+/nosee/js/dist/codemirror/addon/lint/sql-lint.js
+0 4 0 3836 0 0
+/nosee/js/vendor/tracekit.js
+0 5 0 181556 0 0
+/nosee/js/dist/common.js
+0 5 0 17468 0 0
+/nosee/js/dist/page_settings.js
+0 5 0 6272 0 0
+/.well-known/acme-challenge/vA3akXbQa6CgOQqfRyh59ISDrQwPTvkzk_r25p-xN-g
+0 4 0 348 0 0
+/nosee/themes/pmahomme/img/b_docs.png
+1 1 0 705 0 0
+/nosee/js/vendor/jquery/jquery.debounce-1.0.6.js
+0 5 0 8040 0 0
+/nosee/js/dist/indexes.js
+0 5 0 105376 0 0
+/
+0 10 0 9912280 8 0
+/nosee/js/vendor/jquery/jquery.validate.js
+0 5 0 203852 0 0
+/nosee/themes/pmahomme/img/b_export.png
+1 1 0 514 0 0
+/nosee/js/vendor/codemirror/addon/lint/lint.js
+0 4 3258694290707591469 36500 0 0
+/nosee/themes/pmahomme/img/console.png
+1 1 0 292 0 0
+/nosee/themes/pmahomme/img/s_loggoff.png
+1 1 0 626 0 0
+/nosee/themes/pmahomme/img/left_nav_bg.png
+1 1 0 146 0 0
+/nosee/js/vendor/codemirror/addon/lint/lint.css
+0 7 0 14390 0 0
+/nosee/js/vendor/jquery/jquery-ui-timepicker-addon.js
+0 5 0 392375 0 0
+/nosee/js/vendor/jquery/jquery.min.js
+0 5 0 357904 0 0
+/nosee/js/dist/error_report.js
+0 5 0 38484 0 0
+/nosee/js/dist/shortcuts_handler.js
+0 5 0 13304 0 0
+/nosee/themes/pmahomme/img/logo_right.png
+1 4 0 17224 0 0
+/nosee/themes/pmahomme/img/window-new.png
+1 1 0 468 0 0
+/nosee/js/dist/doclinks.js
+0 5 0 73100 0 0
+/nosee/js/vendor/jquery/jquery.mousewheel.js
+0 5 0 33068 0 0
+/nosee/js/vendor/codemirror/addon/hint/show-hint.css
+0 7 0 3115 0 0
+/nosee/favicon.ico
+0 4 0 89944 0 0
+/nosee/themes/pmahomme/img/s_passwd.png
+1 1 0 331 0 0
+/nosee/themes/pmahomme/img/b_tblops.png
+1 1 0 537 0 0
+/nosee/themes/pmahomme/img/b_sql.png
+1 1 0 680 0 0
+/nosee/themes/pmahomme/img/b_engine.png
+1 1 0 398 0 0
+# End Of Table - urls
+# -sites- (monthly)
+ik1-411-37716.vs.sakura.ne.jp
+0 1 1 991228 1 1640211628
+/
+180.254.175.78
+0 222 184 7918124 2 1640194462
+/
+179.43.169.181
+0 1 1 991228 1 1640239244
+/
+ec2-3-19-56-43.us-east-2.compute.amazonaws.com
+0 1 1 87 0 0
+-
+103-123-16-26.citrahost.com
+0 63 63 2443209 1 1640188789
+/nosee/
+89.104.110.34
+0 2 1 991437 1 1640216886
+/
+outbound1.letsencrypt.org
+0 1 1 87 0 0
+-
+65.155.30.101
+0 2 1 991445 1 1640244290
+/
+scanner-09.ch1.censys-scanner.com
+0 3 2 1982673 1 1640216734
+/
+130.245.169.39
+0 2 1 991445 1 1640193620
+/
+ec2-18-159-196-172.eu-central-1.compute.amazonaws.com
+0 1 1 87 0 0
+-
+ec2-52-39-4-59.us-west-2.compute.amazonaws.com
+0 1 1 87 0 0
+-
+45.90.60.130
+0 2 1 991437 1 1640303070
+/
+# End Of Table - sites (monthly)
+# -sites- (daily)
+179.43.169.181
+0 1 1 991228 1 1640239244
+/
+65.155.30.101
+0 2 1 991445 1 1640244290
+/
+45.90.60.130
+0 2 1 991437 1 1640303070
+/
+# End Of Table - sites (daily)
+# -referrers- 
+- (Direct Request)
+0 270
+https://bridging.adhibeton.co.id/nosee/themes/pmahomme/css/theme.css
+0 31
+http://bridging.adhibeton.co.id/nosee/themes/pmahomme/css/theme.css
+0 1
+# End Of Table - referrers
+# -agents- 
+Mozilla/5.0 (Windows; U; Windows NT 5.1; en-US; rv:1.9.0.7) Gecko/2009021910 Firefox/3.0.7
+0 2
+Mozilla/5.0 (compatible; Let's Encrypt validation server; +https://www.letsencrypt.org)
+0 4
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/76.0.3809.71 Safari/537.36
+0 2
+Mozilla/5.0 (Linux; U; Android 2.2; ja-jp; SC-02B Build/FROYO) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safar
+0 1
+Mozilla/5.0 (compatible; CensysInspect/1.1; +https://about.censys.io/)
+0 3
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/94.0.4606.61 Safari/537.36
+0 4
+Mozilla/5.0 (X11; Linux i686; rv:10.0) Gecko/20100101 Firefox/10.0
+0 1
+Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:95.0) Gecko/20100101 Firefox/95.0
+0 222
+Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/96.0.4664.110 Safari/537.36
+0 63
+# End Of Table - agents
+# -search strings- 
+# End Of Table - search strings
+# -usernames- 
+# End Of Table - usernames

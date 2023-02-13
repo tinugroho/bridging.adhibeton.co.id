@@ -1,0 +1,7 @@
+AuthName "bridging.adhibeton.co.id statistics"
+AuthType Basic
+AuthUserFile /home/bridging/.stats-htpasswd
+require valid-user
+<Files .stats-htpasswd>
+deny from all
+</Files>

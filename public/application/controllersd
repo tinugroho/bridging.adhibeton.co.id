@@ -1,0 +1,304 @@
+<?php
+defined('BASEPATH') or exit('No direct script access allowed');
+
+class Api extends CI_Controller
+{
+
+    public function active()
+    {
+        // $live_bspi  = $this->getApi('live-bspi', "http://10.0.17.20:8090/apberp/erp/eaccounting/tools/api/sfservice.cfc?method=getDataBSPI");
+
+        // $dev_bspi   = $this->getApi('dev-bspi', "http://10.0.17.20:8090/apberpdev/erp/eaccounting/tools/api/sfservice.cfc?method=getDataBSPI");
+
+        // $dev_bsp    = $this->getApi('dev-bsp', "http://10.0.17.20:8090/apberpdev/erp/eaccounting/tools/api/sfservice.cfc?method=getDataBSP2");
+
+        // $all_bsp    = array_merge($live_bspi, $dev_bspi, $dev_bsp);
+        // usort($all_bsp, function ($a, $b) {
+        //     return $b['JO_Date'] <=> $a['JO_Date'];
+        // });
+
+        $data = [
+            'judul'         => 'Api Active',
+            'user'          => $this->Model_auth->dataLogin(),
+            'data'          => $this->Model_api->active()
+        ];
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/topbar');
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('api/active', $data);
+        $this->load->view('templates/footer');
+    }
+
+    // public function getApi($type, $url)
+    // {
+    //     //  Initiate curl
+    //     $ch = curl_init();
+    //     // Will return the response, if false it print the response
+    //     curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    //     // Set the url
+    //     curl_setopt($ch, CURLOPT_URL, $url);
+    //     // Execute
+    //     $result = curl_exec($ch);
+    //     // Closing
+    //     curl_close($ch);
+
+    //     // Will dump a beauty json :3
+    //     $result = json_decode($result, true);
+    //     // var_dump($result);
+    //     if (!empty(reset($result))) {
+    //         $result = reset($result);
+    //         foreach ($result as $key => $val) {
+    //             $result[$key]['type'] = $type;
+
+    //             $result[$key]['post_sukses'] = $this->Model_api->countPostSukses($type, $val['JO_Number']);
+    //             $result[$key]['post_gagal'] = $this->Model_api->countPostGagal($type, $val['JO_Number']);
+    //         }
+    //     }
+    //     return $result;
+    // }
+
+
+    public function sukses()
+    {
+        $type = $this->input->get('type');
+        $JO_Number = $this->input->get('JO_Number');
+        $data = [
+            'judul'         => 'Api Sukses',
+            'user'          => $this->Model_auth->dataLogin(),
+            'JO_Number'     => $JO_Number,
+            'type'          => $type,
+            'data'          => $this->Model_api->postSukses($type, $JO_Number)
+        ];
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/topbar');
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('api/post-sukses', $data);
+        $this->load->view('templates/footer');
+    }
+
+    public function detail()
+    {
+        $type = $this->input->get('type');
+        $Index_Log = $this->input->get('Index_Log');
+        $mesin = $this->input->get('mesin');
+        $detailPostGagal = $this->Model_api->detailPostSukses($Index_Log, $mesin);
+        $detailPostGagal = !empty($detailPostGagal) ? $detailPostGagal[0] : '';
+
+        $Running_Date = empty($detailPostGagal) ? '' : $detailPostGagal->Method_Date;
+        $RecordDate = empty($detailPostGagal) ? '' : $detailPostGagal->CreateDateBP;
+        $Keterangan = empty($detailPostGagal) ? '' : $detailPostGagal->Keterangan;
+        $Index_Load = empty($detailPostGagal) ? '' : $detailPostGagal->Index_Load;
+        $Load_Size = empty($detailPostGagal) ? '' : $detailPostGagal->Post_Qty;
+        $JO_Number = empty($detailPostGagal) ? '' : $detailPostGagal->JO_Number;
+        $Material = empty($detailPostGagal) ? '' : $detailPostGagal->Material;
+        $type = empty($detailPostGagal) ? '' : $detailPostGagal->type;
+
+        $data = [
+            'judul'         => 'Api Detail',
+            'user'          => $this->Model_auth->dataLogin(),
+            'Running_Date'  => $Running_Date,
+            'RecordDate'    => $RecordDate,
+            'Keterangan'    => $Keterangan,
+            'Index_Load'    => $Index_Load,
+            'Load_Size'     => $Load_Size,
+            'JO_Number'     => $JO_Number,
+            'Material'      => $Material,
+            'type'          => $type,
+            'mesin'          => $mesin,
+        ];
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/topbar');
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('api/detail', $data);
+        $this->load->view('templates/footer');
+    }
+
+    public function gagal()
+    {
+        $type = $this->input->get('type');
+        $JO_Number = $this->input->get('JO_Number');
+        $data = [
+            'judul'         => 'Api Gagal',
+            'user'          => $this->Model_auth->dataLogin(),
+            'JO_Number'     => $JO_Number,
+            'type'          => $type,
+            'data'          => $this->Model_api->postGagal($type, $JO_Number)
+        ];
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/topbar');
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('api/post-gagal', $data);
+        $this->load->view('templates/footer');
+    }
+
+    public function repost()
+    {
+        $type = $this->input->get('type');
+        $Index_Post_Gagal = $this->input->get('Index_Post_Gagal');
+        $mesin = $this->input->get('mesin');
+        $detailPostGagal = $this->Model_api->detailPostGagal($Index_Post_Gagal, $mesin);
+        $detailPostGagal = !empty($detailPostGagal) ? $detailPostGagal[0] : '';
+        $alert = '';
+        $warna = '';
+
+        if (isset($_POST['repost'])) {
+            $Material = empty($detailPostGagal) ? '' : $detailPostGagal->Material;
+
+            $Input_JO_Number = $this->input->post('JO_Number');
+            $Input_Material = $this->input->post('Material');
+            $Str_Material = '';
+
+
+            $arrMaterial = explode('-', $Material);
+            foreach ($arrMaterial as $key => $val) {
+                $per_material = explode('|', $val);
+                $Str_Material .= '-' . $Input_Material[$key] . '|' . $per_material[1];
+            }
+            $Str_Material = !empty($Str_Material) ? substr($Str_Material, 1) : '';
+            $detailPostGagal = $this->Model_api->repost($type, $Index_Post_Gagal, $Input_JO_Number, $Str_Material, $mesin);
+            if ($detailPostGagal->Keterangan == 'POSTED') {
+                $alert = 'Post Sukses';
+                $warna = 'success';
+            } else {
+                $alert = $detailPostGagal->Keterangan;
+                $warna = 'danger';
+            }
+        }
+
+        $Running_Date = empty($detailPostGagal) ? '' : $detailPostGagal->Running_Date;
+        $RecordDate = empty($detailPostGagal) ? '' : $detailPostGagal->RecordDate;
+        $Keterangan = empty($detailPostGagal) ? '' : $detailPostGagal->Keterangan;
+        $Index_Load = empty($detailPostGagal) ? '' : $detailPostGagal->Index_Load;
+        $Load_Size = empty($detailPostGagal) ? '' : $detailPostGagal->Load_Size;
+        $JO_Number = empty($detailPostGagal) ? '' : $detailPostGagal->JO_Number;
+        $Material = empty($detailPostGagal) ? '' : $detailPostGagal->Material;
+        $type = empty($detailPostGagal) ? '' : $detailPostGagal->type;
+
+        $data = [
+            'judul'         => 'Api Repost',
+            'user'          => $this->Model_auth->dataLogin(),
+            'Running_Date'  => $Running_Date,
+            'RecordDate'    => $RecordDate,
+            'Keterangan'    => $Keterangan,
+            'Index_Load'    => $Index_Load,
+            'Load_Size'     => $Load_Size,
+            'JO_Number'     => $JO_Number,
+            'Material'      => $Material,
+            'type'          => $type,
+            'mesin'          => $mesin,
+            'alert'         => $alert,
+            'warna'         => $warna
+        ];
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/topbar');
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('api/repost', $data);
+        $this->load->view('templates/footer');
+    }
+
+    public function history()
+    {
+        $data = [
+            'judul'         => 'Api History',
+            'user'          => $this->Model_auth->dataLogin(),
+            // 'data'          => $this->Model_api->history()
+        ];
+
+        $this->load->view('templates/header', $data);
+        $this->load->view('templates/topbar');
+        $this->load->view('templates/sidebar', $data);
+        $this->load->view('api/history', $data);
+        echo "<script> var id_region = '" . $this->uri->segment(3) . "'; </script>";
+        echo "<script> var mesin = ''; </script>";
+        $this->load->view('templates/footer');
+    }
+
+    // AJAX
+    public function totalRecord($filter = false)
+    {
+
+        $tglStart = $this->input->get('tglStart');
+        $tglEnd = $this->input->get('tglEnd');
+
+        if ($filter) {
+            $search = $this->input->get('search');
+            $search =  $search['value'];
+        } else {
+            $search = '';
+        }
+        return $this->Model_api->totalRecord($tglStart, $tglEnd, $search);
+    }
+
+    public function ajaxHistory()
+    {
+        $tglStart = $this->input->get('tglStart');
+        $tglEnd = $this->input->get('tglEnd');
+
+        $length = $this->input->get('length');
+        $offset = $this->input->get('start');
+
+        $search =  $this->input->get('search');
+        $search =  $search['value'];
+
+
+        $column_ref = ['Running_Date', 'JO_Number', 'Jobmix_ERP', 'Jobmix_BP', 'Vol', 'RecordDate', 'Running_Date', 'Index_Load', 'Keterangan', 'status'];
+        $order = $this->input->get('order');
+        $order = $order[0];
+        $order['column'] = $column_ref[$order['column']];
+
+
+        $data = $this->Model_api->history($tglStart, $tglEnd, $length, $offset, $search, $order);
+
+        $dataAjax = array();
+        $no = 0;
+        foreach ($data as $v) {
+
+            $dataAjax[$no][] = $no + 1 + $offset;
+            $dataAjax[$no][] = $v->JO_Number;
+            $dataAjax[$no][] = $v->Jobmix_ERP;
+            $dataAjax[$no][] = $v->Jobmix_BP;
+            $dataAjax[$no][] = $v->Vol;
+            $dataAjax[$no][] = empty($v->RecordDate) ? '' : date_format(date_create($v->RecordDate), "Y-m-d <\b\\r> H:i");
+            $dataAjax[$no][] = date_format(date_create($v->Running_Date), "Y-m-d <\b\\r> H:i");
+            $dataAjax[$no][] = $v->Index_Load;
+            $dataAjax[$no][] = $v->Keterangan;
+            $dataAjax[$no][] = $v->status;
+            $dataAjax[$no][] = $v->status == 'sukses' ?
+                '<form target="_blank" action="' . base_url('Api/detail') . '" method="GET">
+                                    <input type="hidden" name="type" value="' . $v->type . '">
+                                    <input type="hidden" name="Index_Log" value="' . $v->Index_Log . '">
+                                    <input type="hidden" name="mesin" value="' . $v->db . '">
+                                    <button type="submit" class="btn btn-info badge">
+                                        Detail
+                                    </button>
+                                </form>'
+                :
+                '<form target="_blank" action="' . base_url('Api/repost') . '" method="GET">
+                                        <input type="hidden" name="type" value="' . $v->type . '">
+                                        <input type="hidden" name="Index_Post_Gagal" value="' . $v->Index_Log . '">
+                                        <input type="hidden" name="mesin" value="' . $v->db . '">
+                                        <button type="submit" class="btn btn-info badge">
+                                            ' . ($v->Keterangan != 'POSTED' ? 'Repost' : 'Detail') . '
+                                        </button>
+                                    </form>';
+            $no++;
+        }
+        $totalRecord = $this->totalRecord();
+        $totalRecordFiltered = $this->totalRecord(true);
+        $response = [
+            // "draw" => $offset,
+            "recordsFiltered" => $search != '' ? $totalRecordFiltered : $totalRecord,
+            "recordsTotal" => $totalRecord,
+            "data"  => $dataAjax,
+            "error" => '',
+        ];
+
+
+        echo json_encode($response);
+    }
+}
