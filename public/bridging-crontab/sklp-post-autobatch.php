@@ -275,7 +275,7 @@ foreach ($schedule_list as $key => $schedule) {
   }
   $result['action'][$key] = [
     'load_query' => $query_loads,
-    'load_result' => $loads,
+    'load_result' => json_decode($loads),
     'args_post' => $args,
     'response_delivery' => $post_sklp_obj,
     'response_submit' => $response_post_submit,
