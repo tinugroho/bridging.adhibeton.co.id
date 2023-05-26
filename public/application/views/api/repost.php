@@ -192,6 +192,7 @@ foreach ($data_density as $density) {
                     </div>
                     <?php
                     // if ($mesin == 'commandbatch') {
+                    $arr_material_akumulasi = [];
                     if (in_array($mesin, ['commandbatch', 'autobatch'])) {
                         if (!empty($Material)) {
                             $arrMaterial = explode('-', $Material);
@@ -214,7 +215,6 @@ foreach ($data_density as $density) {
                             }
                             $materialPerLoad = array_values($materialPerLoad);
 
-                            $arr_material_akumulasi = [];
                             // foreach ($arrMaterial as $index_material => $val) {
                             foreach ($materialPerLoad as $index_material => $val) {
                                 if (isset($per_materials[$index_material])) {
@@ -263,21 +263,23 @@ foreach ($data_density as $density) {
                                                 $item_koknversi_not_found = false;
                                                 $current_amount = $per_material[1];
                                                 $rumus = '';
-                                                if (isset($material_satuan[$per_material[0]])) {
-                                                    if (strtoupper($material_satuan[$per_material[0]]) == strtoupper($materialPerLoad[$no]->Amt_UOM)) {
-                                                        $current_amount = $materialPerLoad[$no]->Auto;
-                                                    } else {
-                                                        $key_density = array_search($per_material[0], array_column($data_density_production, 'Item_Code'));
-                                                        if ($key_density !== false) {
-                                                            $current_amount = $data_density_production[$key_density]['Item_Density'] * $materialPerLoad[$no]->Auto / $data_density_production[$key_density]['Scale1'];
-                                                            $rumus = $data_density_production[$key_density]['Item_Density'] . '*' . $materialPerLoad[$no]->Auto . '/' . $data_density_production[$key_density]['Scale1'];
-                                                            $current_amount = round($current_amount, 2);
+                                                if ($materialPerLoad[$no]->Auto > 0) {
+                                                    if (isset($material_satuan[$per_material[0]])) {
+                                                        if (strtoupper($material_satuan[$per_material[0]]) == strtoupper($materialPerLoad[$no]->Amt_UOM)) {
+                                                            $current_amount = $materialPerLoad[$no]->Auto;
                                                         } else {
-                                                            $item_koknversi_not_found = true;
+                                                            $key_density = array_search($per_material[0], array_column($data_density_production, 'Item_Code'));
+                                                            if ($key_density !== false) {
+                                                                $current_amount = $data_density_production[$key_density]['Item_Density'] * $materialPerLoad[$no]->Auto / $data_density_production[$key_density]['Scale1'];
+                                                                $rumus = $data_density_production[$key_density]['Item_Density'] . '*' . $materialPerLoad[$no]->Auto . '/' . $data_density_production[$key_density]['Scale1'];
+                                                                $current_amount = round($current_amount, 2);
+                                                            } else {
+                                                                $item_koknversi_not_found = true;
+                                                            }
                                                         }
+                                                    } else {
+                                                        $item_koknversi_not_found = true;
                                                     }
-                                                } else {
-                                                    $item_koknversi_not_found = true;
                                                 }
 
                                                 if (isset($arr_material_akumulasi[$per_material[0]])) {
@@ -294,7 +296,9 @@ foreach ($data_density as $density) {
                                             <div class="col-md-3 mb-3 mb-md-0">
                                                 <?php
                                                 if (!empty($data_jo)) {
-                                                    if ($current_amount == 'xxx' || $current_amount == 0) {
+                                                    if ($materialPerLoad[$no]->Auto == 0) {
+                                                        echo '<span class="badge badge-success">Pass</span>';
+                                                    } else if ($current_amount == 'xxx' || $current_amount == 0) {
                                                         echo '<span class="badge badge-danger">Invalid</span>';
                                                         $invalid_material_amount = true;
                                                     } else if ($item_koknversi_not_found) {
@@ -325,7 +329,9 @@ foreach ($data_density as $density) {
                 <?php
                 if (empty($data_jo)) {
                     echo '<div class="alert alert-danger">Terjadi kesalahan, data JO tidak ditemukan di API ERP.</div>';
-                    echo '<button type="submit" name="update" class="btn btn-primary">Update</button>';
+                    if (strtoupper($Keterangan) != 'POSTED') {
+                        echo '<button type="submit" name="update" class="btn btn-primary">Update</button>';
+                    }
                 } else if ($invalid_material_code) {
                     echo '<div class="alert alert-danger">Terjadi kesalahan, material code tidak sesuai dengan API ERP. Silahkan Edit Material Code sesuai API ERP.</div>';
                     echo '<button type="submit" name="update" class="btn btn-primary">Update</button>';
@@ -365,11 +371,10 @@ foreach ($data_density as $density) {
 </div>
 
 <?php
-
 // echo '<pre>';
-// // print_r($data_density_production);
-// print_r($all_jo);
-// // print_r($this->db->queries);
+// print_r($data_density_production);
+// print_r($Material);
+// print_r($this->db->queries);
 // echo '</pre>';
 
 ?>

@@ -2,7 +2,8 @@
 
 $user_name = "sa";
 $password = "Bismillah123";
-$host_name = "172.16.20.200:3336";
+// $host_name = "172.16.20.200:3336";
+$host_name = "172.16.200.104:3336";
 $database = "db_bridging";
 $database_ab = "db_autobatch";
 
@@ -43,8 +44,7 @@ curl_setopt_array($curl_login, array(
         "login": "adm_bp@apb.com",
         "password": "APB2021",
         "db": "apbdev"
-    }
-}',
+    }}',
   CURLOPT_HTTPHEADER => array(
     'Content-Type: application/json',
   ),
@@ -55,6 +55,8 @@ $response_login = curl_exec($curl_login);
 curl_close($curl_login);
 // echo $response_login, '<br>';
 $login_obj = json_decode($response_login);
+
+// var_dump($response_login);
 
 
 // ==============================================================================
@@ -123,16 +125,41 @@ foreach ($schedule_list as $schedule) {
   //                 and Ticket_Status=\'O\'
   //                 ORDER BY `a`.`index_load` DESC';
 
+  //Cek indexload terbesar dari api gagal Luqman 24/05/2023
+  // $query_cek = "SELECT ref FROM SKLP_API_Gagal
+  //                   where task_code = '" . $schedule->number . "'
+  //                   union 
+  //               SELECT ref from SKLP_API_Log
+  //                   where task_code = '" . $schedule->number . "'
+  //                   ORDER by ref DESC";
+  // $max_ref = mysqli_query($conmysql, $query_cek);
+
+  // var_dump($max_ref['ref']);
+
+  // echo $max_ref;
+
+  // echo $schedule->number;
+
+
+
+
+
+  // $query_loads = 'select a.*, b.bp_name  FROM `V_BatchSetupTickets` a 
+  //                 inner join Batching_plant b on a.BP_ID=b.id_bp 
+  //                 where a.index_load > (select ifnull(max(c.ref),(select ifnull(max(d.ref),0) from SKLP_API_Log d where d.task_code=\'' . $schedule->number . '\')) from SKLP_API_Gagal c where c.task_code=\'' . $schedule->number . '\') 
+  //                 and (PO_Num=\'' . preg_replace('/\s+/', '', $schedule->number)  . '\' OR Job_Code=\'' . preg_replace('/\s+/', '', $schedule->number) . '\')  
+  //                 and a.Other_Code=\'' . preg_replace('/\s+/', '', strtoupper($schedule->mutu[1]))  . '\' 
+  //                 and a.Consistence=\'' . preg_replace('/\s+/', '', $schedule->slump[1])  . '\' 
+  //                 and a.Ticket_Status=\'O\'
+  //                 ORDER BY `a`.`index_load` DESC';
   $query_loads = 'select a.*, b.bp_name  FROM `V_BatchSetupTickets` a 
                   inner join Batching_plant b on a.BP_ID=b.id_bp 
-                  where a.index_load > (select ifnull(max(ref),(select ifnull(max(ref),0) from SKLP_API_Log where task_code=\'' . $schedule->number . '\')) from SKLP_API_Gagal where task_code=\'' . $schedule->number . '\') 
-                  and (PO_Num=\'' . $schedule->number . '\' OR Job_Code=\'' . $schedule->number . '\')  
-                  and Other_Code=\'' . $schedule->mutu[1] . '\' 
-                  and Consistence=\'' . $schedule->slump[1] . '\' 
-                  and Ticket_Status=\'O\'
+                  where a.index_load > (select ifnull(max(c.ref),(select ifnull(max(d.ref),0) from SKLP_API_Log d where d.task_code=\'' . $schedule->number . '\')) from SKLP_API_Gagal c where c.task_code=\'' . $schedule->number . '\') 
+                  and (PO_Num=\'' . preg_replace('/\s+/', '', $schedule->number)  . '\' OR Job_Code=\'' . preg_replace('/\s+/', '', $schedule->number) . '\')  
+                  and a.Other_Code=\'' . preg_replace('/\s+/', '', strtoupper($schedule->mutu[1]))  . '\' 
+                  and a.Ticket_Status=\'O\'
                   ORDER BY `a`.`index_load` DESC';
-
-  echo $query_loads . '<br>';
+  echo 'hasil query = ' . $query_loads . '<br>';
   $loads = mysqli_query($conmysql, $query_loads);
 
   echo mysqli_num_rows($loads) . ' loads<br>';
@@ -165,7 +192,7 @@ foreach ($schedule_list as $schedule) {
                                         "token": "' . $login_obj->result->global_token . '",
                                         "model": "apb.truck",
                                         "method": "search_read",
-                                        "args": [[["name","=", "' . $load['Truck_Code'] . '"]]],
+                                        "args": [[["name","=", "' . preg_replace('/\s+/', '', strtoupper($load['Truck_Code'])) . '"]],["id","display_name"]],
                                         "context": {}
                                     }
                                 }',
@@ -180,16 +207,20 @@ foreach ($schedule_list as $schedule) {
       $truck_obj = json_decode($response_truck);
 
 
-      $truck_id = 43; //default truck id di master data api
       if (!empty($truck_obj->result)) {
         $truck_id = $truck_obj->result[0]->id;
+      } else {
+        $truck_id = 31; // TM036default truck id di master data api T
       }
+
       echo 'Truck Id = ' . $truck_id . '<br>';
 
 
 
       // post sklp 
       // driver masih default belum dinamis
+      $driver = 90; //driver 6
+      $sender = 70; //Admin Batching Plant
       $args = ' 
         {"jsonrpc": "2.0",
           "params": {
@@ -202,11 +233,12 @@ foreach ($schedule_list as $schedule) {
                 "apb_plant_id": ' . $plant_id[0] . ',
                 "date": "' . $load['RecordDate'] . '",
                 "apb_truck_id": ' . $truck_id . ',
-                "driver_id": 70,
+                "driver_id": ' . $driver . ', 
+                "sender_id": ' . $sender . ',
                 "apb_delivery_line": [[0, 0,
                     {
                         "volume": ' . $load['Load_Size'] . ',
-                        "volume_comm": 0,
+                        "volume_comm": ' . $load['Delivered_Qty'] . ',
                         "description": "' . $load['Address_Line3'] . '"
                     }
                 ]]
@@ -214,6 +246,7 @@ foreach ($schedule_list as $schedule) {
             "context": {}
           }
         }';
+
 
       $curl_post_sklp = curl_init();
       curl_setopt_array($curl_post_sklp, array(
@@ -236,20 +269,20 @@ foreach ($schedule_list as $schedule) {
       $response_post_sklp = curl_exec($curl_post_sklp);
 
       curl_close($curl_post_sklp);
-      // echo $response_post_sklp . '<br>';
+      echo $response_post_sklp . '<br>';
       $post_sklp_obj = json_decode($response_post_sklp);
-      if (isset($post_sklp_obj->result)){
-        $submit='
+      if (isset($post_sklp_obj->result)) {
+        $submit = '
             {"jsonrpc": "2.0",
               "params": {
-                  "token": "af7eec1b5c53d61eb91392a6cf16d8241ec235391253d9242f68d5af9b12c351",
-                  "model": "apb.delivery",
+                "token": "' . $login_obj->result->global_token . '",
+                "model": "apb.delivery",
                   "method": "action_submit",
-                  "args": ['. $post_sklp_obj->result .'], 
+                  "args": [' . $post_sklp_obj->result . '], 
                   "context": {}
               }
-            }' ;
-
+            }';
+        echo $submit . '<br><br>';
         $curl_post_submit = curl_init();
         curl_setopt_array($curl_post_submit, array(
           CURLOPT_URL => 'https://apb.garudea.com/json-call',
@@ -272,10 +305,9 @@ foreach ($schedule_list as $schedule) {
 
         curl_close($curl_post_submit);
         echo "<br>";
-        echo "result post submit :" ;
+        echo "result post submit :";
         echo "<br>";
         echo $response_post_submit . '<br>';
-
       }
 
       if (isset($post_sklp_obj->error)) {

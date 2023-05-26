@@ -227,23 +227,25 @@ $koknversi_not_found = false;
                                                 $item_koknversi_not_found = false;
                                                 $current_amount = $per_material[1];
                                                 $rumus = '';
-                                                if (isset($material_satuan[$per_material[0]])) {
-                                                    if (strtoupper($material_satuan[$per_material[0]]) == strtoupper($val->Amt_UOM)) {
-                                                        $current_amount = $val->Auto;
-                                                    } else {
-                                                        $key_density = array_search($per_material[0], array_column($data_density_production, 'Item_Code'));
-                                                        if ($key_density !== false) {
-                                                            $current_amount = $data_density_production[$key_density]['Item_Density'] * $val->Auto / $data_density_production[$key_density]['Scale1'];
-                                                            $rumus = $data_density_production[$key_density]['Item_Density'] . '*' . round($val->Auto, 2) . '/' . $data_density_production[$key_density]['Scale1'];
-                                                            $current_amount = round($current_amount, 2);
+                                                if ($val->Auto > 0) {
+                                                    if (isset($material_satuan[$per_material[0]])) {
+                                                        if (strtoupper($material_satuan[$per_material[0]]) == strtoupper($val->Amt_UOM)) {
+                                                            $current_amount = $val->Auto;
                                                         } else {
-                                                            $item_koknversi_not_found = true;
-                                                            $koknversi_not_found = true;
+                                                            $key_density = array_search($per_material[0], array_column($data_density_production, 'Item_Code'));
+                                                            if ($key_density !== false) {
+                                                                $current_amount = $data_density_production[$key_density]['Item_Density'] * $val->Auto / $data_density_production[$key_density]['Scale1'];
+                                                                $rumus = $data_density_production[$key_density]['Item_Density'] . '*' . round($val->Auto, 2) . '/' . $data_density_production[$key_density]['Scale1'];
+                                                                $current_amount = round($current_amount, 2);
+                                                            } else {
+                                                                $item_koknversi_not_found = true;
+                                                                $koknversi_not_found = true;
+                                                            }
                                                         }
+                                                    } else {
+                                                        $item_koknversi_not_found = true;
+                                                        $koknversi_not_found = true;
                                                     }
-                                                } else {
-                                                    $item_koknversi_not_found = true;
-                                                    $koknversi_not_found = true;
                                                 }
 
                                                 if (isset($arr_material_akumulasi[$per_material[0]])) {
@@ -259,7 +261,9 @@ $koknversi_not_found = false;
                                             <div class="col-md-3 mb-3 mb-md-0">
                                                 <?php
                                                 if (!empty($data_jo)) {
-                                                    if ($current_amount == 'xxx' || $current_amount == 0) {
+                                                    if ($val->Auto == 0) {
+                                                        echo '<span class="badge badge-success">Pass</span>';
+                                                    } else if ($current_amount == 'xxx' || $current_amount == 0) {
                                                         echo '<span class="badge badge-danger">Invalid</span>';
                                                         $invalid_material_amount = true;
                                                     } else if ($item_koknversi_not_found) {

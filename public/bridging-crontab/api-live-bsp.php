@@ -112,8 +112,14 @@ class Api
 
 	public function loadJoNumber($JO_Number)
 	{
+		$whcode = substr($JO_Number,0,5);
+		if($whcode == 'MGY01'){
+			$apiupdate = " and a.RecordDate >= '2023-03-07 00:00'";
+		} else {
+			$apiupdate = " and a.RecordDate > '2023-02-13 00:00'";
+		}
+
 		$last_post_id = $this->last_post_id($JO_Number);
-		$apiupdate = " and a.RecordDate > '2023-02-13 00:00'";
 
 		//SELECT LOAD JO NUMBER
 		$query = "select max(a.index_load) as index_load ,a.LoadID, max(a.RecordDate) as RecordDate, a.Load_Size, a.Item_Code, a.BP_ID, a.CreatedBy, a.RecordDate, a.Ticket_Code, a.Truck_Code, a.Driver_Code, b.bp_name, b.api_time_correction, c.region_name
@@ -329,7 +335,12 @@ if (!empty($databsp['databsp2'])) {
 
 				$jam = new DateTime($oldRecordDate->format('H:i'));
 				$begin = new DateTime('00:01');
-				$end = new DateTime('07:30');
+
+				if (substr($jo['JO_Number'],0,3) == 'GRK'){
+					$end = new DateTime('05:59');
+				} else{
+					$end = new DateTime('07:59');
+				}
 
 				if ($begin <= $jam && $jam <= $end) {
 					if ($newRecordDate > $cekJoDate) {
@@ -428,16 +439,17 @@ if (!empty($databsp['databsp2'])) {
 					} else {
 						$material_akumulasi[$materialvalue['Item_Code']] = $amt;
 					}
-					$material[$materialvalue['Item_Code']] = $amt;
+					// $material[$materialvalue['Item_Code']] = $amt;
+					$material[] = $materialvalue['Item_Code'] . '|' . $amt;
 				}
 			}
 
 			// generate string material asli
-			$arr_material_str = [];
-			foreach ($material as $x => $y) {
-				$arr_material_str[] = $x . '|' . $y;
-			}
-			$material = implode('-', $arr_material_str);
+			// $arr_material_str = [];
+			// foreach ($material as $x => $y) {
+			// 	$arr_material_str[] = $x . '|' . $y;
+			// }
+			$material = implode('-', $material);
 
 			// generate sting material akumulasi
 			$arr_material_akumulasi_str = [];

@@ -316,7 +316,7 @@ if (!empty($databsp['databsp2'])) {
 
 				$jam = new DateTime($oldRecordDate->format('H:i'));
 				$begin = new DateTime('00:01');
-				$end = new DateTime('07:30');
+				$end = new DateTime('07:59');
 
 				if ($begin <= $jam && $jam <= $end) {
 					if ($newRecordDate > $cekJoDate) {

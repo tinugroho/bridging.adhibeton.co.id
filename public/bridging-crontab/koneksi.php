@@ -19,7 +19,7 @@
 
 $user_name = "sa";
 $password = "Bismillah123";
-$host_name = "172.16.20.200:3336";
+$host_name = "172.16.200.104:3336";
 $database = "db_bridging";
 $database_ab = "db_autobatch";
 $database_eu = "db_eurotech";
