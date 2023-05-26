@@ -107,8 +107,8 @@ foreach ($schedule_list as $key => $schedule) {
                 ,jh.Other_Code as Other_Code
                 from TICKET t
                 left join JOBMIX_HEADER jh on jh.Jobmix_Id = t.Jobmix_Id 
-                where PO_Number = \'' . $schedule->number . '\' 
-                and jh.Other_Code = \'' . ($schedule->mutu[1]) . '\' 
+                where PO_Number = \'' . preg_replace('/\s+/', '', $schedule->number)  . '\' 
+                and jh.Other_Code = \'' . preg_replace('/\s+/', '', strtoupper($schedule->mutu[1])) . '\' 
                 ORDER BY t.index_load DESC';
 
   $loads = mysqli_query($conmysql, $query_loads);
@@ -137,7 +137,7 @@ foreach ($schedule_list as $key => $schedule) {
                                         "token": "' . $login_obj->result->global_token . '",
                                         "model": "apb.truck",
                                         "method": "search_read",
-                                        "args": [[["name","=", "' . $load['Truck_Code'] . '"]]],
+                                        "args": [[["name","=", "' . preg_replace('/\s+/', '', $load['Truck_Code'])  . '"]]],
                                         "context": {}
                                     }
                                 }',
