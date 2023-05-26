@@ -333,7 +333,7 @@ class Model_produksi extends CI_Model
 		// record date
 
 		$BP_ID = $BP_ID != '' ? " and a.BP_ID=$BP_ID " : '';
-		$query = 	"select x.*, x.Driver Driver_Name, x.Truck Truck_Code, y.*, z.item, '' Order_Number_Of_Tickets
+		$query = 	"select x.*, y.*, z.item, '' Order_Number_Of_Tickets
 					from (
 						select a.Ticket_Id max_ticket, 
 							a.index_load,
@@ -346,7 +346,7 @@ class Model_produksi extends CI_Model
 							PO_Number sklp,
 							a.Jobmix_Id, b.Jobmix_Code Item_Code, 
 							a.Qty_Jobmix Load_Size, a.BP_ID, a.Createby CreatedBy, a.BP_Name bp_name, a.Createdate RecordDate,
-							'Adhi Beton' Customer_Description, '' OrderID, 'O' Ticket_Status, '' Driver_Name, '' Truck_Code,
+							'Adhi Beton' Customer_Description, '' OrderID, 'O' Ticket_Status, a.Driver Driver_Name, a.Truck Truck_Code,
 							ld.Index_Log as api_sukses, lg.Index_Post_Gagal as api_gagal, lg.type as api_gagal_type,
 							(
 								select index_load from API_Logs_Detail where Method = 'POST' and 
