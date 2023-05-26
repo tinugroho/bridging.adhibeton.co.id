@@ -333,7 +333,7 @@ class Model_produksi extends CI_Model
 		// record date
 
 		$BP_ID = $BP_ID != '' ? " and a.BP_ID=$BP_ID " : '';
-		$query = 	"select x.*, y.*, z.item, '' Order_Number_Of_Tickets
+		$query = 	"select x.*,x.Driver Driver_Name, x.Truck Truck_Code, y.*, z.item, '' Order_Number_Of_Tickets
 					from (
 						select a.Ticket_Id max_ticket, 
 							a.index_load,
@@ -367,6 +367,7 @@ class Model_produksi extends CI_Model
 								order by index_load desc limit 1
 							) api_sukses_last_id,						
 							bp.api api_type
+							a.
 						from TICKET a inner join JOBMIX_HEADER b on a.Jobmix_Id = b.Jobmix_Id 
 						inner join Batching_plant bp on a.BP_ID = bp.id_bp 
 						left join `API_Logs_Detail` ld on a.index_load=ld.index_load and ld.Method = 'POST'
