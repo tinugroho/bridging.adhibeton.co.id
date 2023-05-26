@@ -98,14 +98,15 @@ $result['schedule_list'] = $schedule_list;
 
 foreach ($schedule_list as $key => $schedule) {
 
-  $query_loads = 'SELECT BP_Code AS bp_name
-                ,Ticket_Id as Ticket_Code
-                ,Qty_Jobmix as Load_Size
-                ,Truck as Truck_Code
-                ,Driver as Driver_Name
-                ,Createdate as RecordDate
-                ,jh.Other_Code as Other_Code
-                from TICKET t
+  $query_loads = 'SELECT 
+                t.BP_Code AS bp_name,
+                t.Ticket_Id as Ticket_Code,
+                jh.Qty_Jobmix as Load_Size,
+                t.Truck as Truck_Code,
+                t.Driver as Driver_Name,
+                t.Createdate as RecordDate,
+                jh.Other_Code as Other_Code
+                from TICKET t 
                 left join JOBMIX_HEADER jh on jh.Jobmix_Id = t.Jobmix_Id 
                 where PO_Number = \'' . preg_replace('/\s+/', '', $schedule->number)  . '\' 
                 and jh.Other_Code = \'' . preg_replace('/\s+/', '', strtoupper($schedule->mutu[1])) . '\' 
