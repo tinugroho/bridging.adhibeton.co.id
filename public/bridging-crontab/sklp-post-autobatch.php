@@ -43,8 +43,12 @@ $response_login = curl_exec($curl_login);
 
 curl_close($curl_login);
 $login_obj = json_decode($response_login);
-$result['api_login'] = !empty($login_obj->result->global_token) ? 'Success' : 'Failed';
+$result['login'] = $login_obj;
 
+
+// ==============================================================================
+
+// Edit day of schedule==========================================================
 $waktu = date("Y-m-d");
 
 $curl_schedule = curl_init();
@@ -77,10 +81,10 @@ curl_setopt_array($curl_schedule, array(
 $response_schedule = curl_exec($curl_schedule);
 curl_close($curl_schedule);
 $schedule_obj = json_decode($response_schedule);
-$result['api_schedule'] = $schedule_obj->result;
+$result['schedule'] = $schedule_obj;
 
 if (isset($schedule_obj->error)) {
-  $result['api_schedule'] = $schedule_obj->error->message;
+  $result['schedule'] = $schedule_obj->error->message;
   exit();
 }
 
@@ -90,63 +94,30 @@ foreach ($schedule_obj->result as $val) {
     $schedule_list[] = $val;
   }
 }
-$result['api_schedule_list'] = $schedule_list;
+$result['schedule_list'] = $schedule_list;
 
 foreach ($schedule_list as $key => $schedule) {
 
-  $query_loads = "SELECT
-                    t.index_load as index_load,
-                    t.BP_Code AS bp_name,
-                    t.Ticket_Id as Ticket_Code,
-                    (
-                        select
-                            sum(Qty_Jobmix)
-                        from
-                            BATCH_HEADER
-                        where
-                            BATCH_HEADER.Ticket_Id = t.Ticket_Id
-                            and BATCH_HEADER.BP_ID = t.BP_ID
-                    ) as Load_Size,
-                    t.Truck as Truck_Code,
-                    t.Driver as Driver_Name,
-                    sp.apb_plant_id as BP_ID,
-                    t.Createdate as RecordDate,
-                    jh.Other_Code as Other_Code
-                from
-                    TICKET t
-                    left join JOBMIX_HEADER jh on jh.Jobmix_Id = t.Jobmix_Id
-                    left join SKLP_Plant sp on sp.bp_id = t.BP_ID
-                where
-                    PO_Number = '" . preg_replace('/\s+/', '', $schedule->number)  . "'
+  $query_loads = "SELECT BP_Code AS bp_name
+                    ,Ticket_Id as Ticket_Code
+                    ,Qty_Jobmix as Load_Size
+                    ,Truck as Truck_Code
+                    ,Driver as Driver_Name
+                    ,Createdate as RecordDate
+                    ,jh.Other_Code as Other_Code
+                from TICKET t
+                left join JOBMIX_HEADER jh on jh.Jobmix_Id = t.Jobmix_Id 
+                where PO_Number = '" . preg_replace('/\s+/', '', $schedule->number)  . "'
                     and jh.Other_Code ='" . preg_replace('/\s+/', '', strtoupper($schedule->mutu[1])) . "'
-                    and t.index_load > (
-                        select
-                            ifnull(
-                                max(sag.ref),
-                (
-                                    select
-                                        ifnull(max(sal.ref), 0)
-                                    from
-                                        SKLP_API_Log sal
-                                    where
-                                        sal.task_code = '" . preg_replace('/\s+/', '', $schedule->number)  . "'
-                                )
-                            )
-                        from
-                            SKLP_API_Gagal sag
-                        where
-                            sag.task_code = '" . preg_replace('/\s+/', '', $schedule->number)  . "'
-                    )
-                ORDER BY
-                    t.index_load DESC";
+                    ORDER BY t.index_load DESC";
 
   $loads = mysqli_query($conmysql, $query_loads);
 
-  $result['action'] = 'Tidak menemukan Loading dengan menggunakan TASK CODE yg active';
-
   while ($load = mysqli_fetch_array($loads)) {
+    $plant_id = mysqli_query($conmysql, "select apb_plant_id from SKLP_Plant where bp_id=" . $load['BP_ID']);
+    $plant_id = mysqli_fetch_array($plant_id);
 
-    if (!empty($load['BP_ID'])) {
+    if (!empty($plant_id[0])) {
 
       // get id truck
       $curl_truck = curl_init();
@@ -179,17 +150,21 @@ foreach ($schedule_list as $key => $schedule) {
       curl_close($curl_truck);
 
       $truck_obj = json_decode($response_truck);
+
+
       if (!empty($truck_obj->result)) {
         $truck_id = $truck_obj->result[0]->id;
       } else {
         $truck_id = 31; // TM036default truck id di master data api T
       }
 
+
       // post sklp 
       // driver masih default belum dinamis
       $driver = 90; //driver 6
       $sender = 70; //Admin Batching Plant
-      $args = '{"jsonrpc": "2.0",
+      $args = ' 
+          {"jsonrpc": "2.0",
             "params": {
               "token": "' . $login_obj->result->global_token . '",
               "model": "apb.delivery",
@@ -197,7 +172,7 @@ foreach ($schedule_list as $key => $schedule) {
               "args": [{
                   "schedule_id": ' . $schedule->id . ',
                   "name": "' . $load['bp_name'] . '-' . $load['Ticket_Code'] . '",
-                  "apb_plant_id": ' . $load['BP_ID'] . ',
+                  "apb_plant_id": ' . $plant_id[0] . ',
                   "date": "' . $load['RecordDate'] . '",
                   "apb_truck_id": ' . $truck_id . ',
                   "driver_id": ' . $driver . ', 
@@ -205,15 +180,14 @@ foreach ($schedule_list as $key => $schedule) {
                   "apb_delivery_line": [[0, 0,
                       {
                           "volume": ' . $load['Load_Size'] . ',
-                          "volume_comm": 0,
-                          "description": 0
+                          "volume_comm": ' . !empty($load['Delivered_Qty']) ? $load['Delivered_Qty'] : 0 . ',
+                          "description": "' . $load['Address_Line3'] . '"
                       }
                   ]]
               }],
               "context": {}
             }
           }';
-
 
       $curl_post_sklp = curl_init();
       curl_setopt_array($curl_post_sklp, array(
@@ -242,7 +216,7 @@ foreach ($schedule_list as $key => $schedule) {
         $submit = '
             {"jsonrpc": "2.0",
               "params": {
-                  "token": "' . $login_obj->result->global_token . '",
+                  "token": "af7eec1b5c53d61eb91392a6cf16d8241ec235391253d9242f68d5af9b12c351",
                   "model": "apb.delivery",
                   "method": "action_submit",
                   "args": [' . $post_sklp_obj->result . '], 
@@ -287,6 +261,7 @@ foreach ($schedule_list as $key => $schedule) {
                         (`task_code`,`task_description`, `ref`, `args`, `keterangan`, `status`) 
                         VALUES 
                         ('" . $schedule->number . "','" . $schedule->project[1] . "', " . $load['index_load'] . ", '" . $args . "', 'sukses', 'sukses')";
+
         mysqli_query($conmysql, $query_post);
       }
       sleep(1);
@@ -297,24 +272,14 @@ foreach ($schedule_list as $key => $schedule) {
                     ('" . $schedule->number . "','" . $schedule->project[1] . "', " . $load['index_load'] . ", '', 'BP ID " . $load['BP_ID'] . " tidak ada di SKLP_Plant', 'gagal')";
       mysqli_query($conmysql, $query_post);
     }
-    $result['action'][$key] = [
-      'load_query' => $query_loads,
-      'args_post' => $args,
-      'detail' => [
-        'truck_id' => $truck_id,
-        'schedule_id' => $schedule->id,
-        'schedule_number' => $schedule->number,
-        'project' => $schedule->project[1],
-        'doket_number' => $load['bp_name'] . '-' . $load['Ticket_Code'],
-        'bp_id' => $load['BP_ID'],
-        'recorddate' => $load['RecordDate'],
-        'driver' => $driver,
-        'sender' => $sender,
-        'load_size' => $load['Load_Size'],
-        'query_save_log' => $query_post,
-      ]
-    ];
   }
+  $result['action'][$key] = [
+    'load_query' => $query_loads,
+    'load_result' => json_decode($loads),
+    'args_post' => $args,
+    'response_delivery' => $post_sklp_obj,
+    'response_submit' => $response_post_submit,
+  ];
 }
 
 header('Content-Type: application/json');
