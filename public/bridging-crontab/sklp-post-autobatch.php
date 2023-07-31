@@ -90,18 +90,50 @@ $result['schedule'] = $schedule_obj->result;
 $result['posted'] = [];
 foreach ($schedule_obj->result as $key => $schedule) {
   if ($schedule->number != false) {
-    $query_loads = "SELECT BP_Code AS bp_name
-        ,Ticket_Id as Ticket_Code
-        ,Qty_Jobmix as Load_Size
-        ,Truck as Truck_Code
-        ,Driver as Driver_Name
-        ,Createdate as RecordDate
-        ,jh.Other_Code as Other_Code
-      from TICKET t
-      left join JOBMIX_HEADER jh on jh.Jobmix_Id = t.Jobmix_Id 
-      where PO_Number = '" . preg_replace('/\s+/', '', $schedule->number)  . "'
-        and upper(jh.Other_Code) ='" . preg_replace('/\s+/', '', strtoupper($schedule->mutu[1])) . "'
-        ORDER BY t.index_load DESC";
+    $query_loads = "SELECT
+                      t.index_load as index_load,
+                      t.BP_Code AS bp_name,
+                      t.Ticket_Id as Ticket_Code,
+                      (
+                          select
+                              sum(Qty_Jobmix)
+                          from
+                              BATCH_HEADER
+                          where
+                              BATCH_HEADER.Ticket_Id = t.Ticket_Id
+                              and BATCH_HEADER.BP_ID = t.BP_ID
+                      ) as Load_Size,
+                      t.Truck as Truck_Code,
+                      t.Driver as Driver_Name,
+                      sp.apb_plant_id as BP_ID,
+                      t.Createdate as RecordDate,
+                      jh.Other_Code as Other_Code
+                  from
+                      TICKET t
+                      left join JOBMIX_HEADER jh on jh.Jobmix_Id = t.Jobmix_Id
+                      left join SKLP_Plant sp on sp.bp_id = t.BP_ID
+                  where
+                      upper(t.PO_Number) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "'
+                      and t.index_load > (
+                              select
+                                  ifnull(
+                                      max(sag.ref),
+                      (
+                                          select
+                                              ifnull(max(sal.ref), 0)
+                                          from
+                                              SKLP_API_Log sal
+                                          where
+                                              upper(sal.task_code) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "'
+                                      )
+                                  )
+                              from
+                                  SKLP_API_Gagal sag
+                              where
+                                  upper(sag.task_code) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "'
+                          )
+                      ORDER BY
+                          t.index_load DESC";
 
     $loads = mysqli_query($conmysql, $query_loads);
 
@@ -268,6 +300,7 @@ foreach ($schedule_obj->result as $key => $schedule) {
         'load_size'      => $load['Load_Size'],
         'vol_com'        =>  0,
         'description'    => NULL,
+        'query_post_save' => strval($query_post),
       ];
       array_push($result['posted'], $posted);
     }

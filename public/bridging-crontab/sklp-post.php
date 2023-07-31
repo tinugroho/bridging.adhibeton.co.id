@@ -144,8 +144,8 @@ foreach ($schedule_obj->result as $schedule) {
     //                 and a.Consistence=\'' . preg_replace('/\s+/', '', $schedule->slump[1])  . '\' 
     //                 and a.Ticket_Status=\'O\'
     //                 ORDER BY `a`.`index_load` DESC';
-    $query_loads = 'select a.*, b.bp_name  FROM `V_BatchSetupTickets` a 
-          inner join Batching_plant b on a.BP_ID=b.id_bp 
+    $query_loads = 'select a.*, b.bp_name as bp_name FROM `V_BatchSetupTickets` a 
+          left join Batching_plant b on a.BP_ID=b.id_bp 
           where a.index_load > (select ifnull(max(c.ref),(select ifnull(max(d.ref),0) from SKLP_API_Log d where d.task_code=\'' . $schedule->number . '\')) from SKLP_API_Gagal c where c.task_code=\'' . $schedule->number . '\') 
           and (PO_Num=\'' . preg_replace('/\s+/', '', $schedule->number)  . '\' OR Job_Code=\'' . preg_replace('/\s+/', '', $schedule->number) . '\')  
           and upper(a.Other_Code)=\'' . preg_replace('/\s+/', '', strtoupper($schedule->mutu[1]))  . '\' 
@@ -312,6 +312,7 @@ foreach ($schedule_obj->result as $schedule) {
         'load_size'      => $load['Load_Size'],
         'vol_com'        => !empty($load['Delivered_Qty']) ? $load['Delivered_Qty'] : 0,
         'description'    => !empty($load['Address_Line3']) ? $load['Address_Line3'] : '',
+        'query_post_save' => strval($query_post),
       ];
       array_push($result['posted'], $posted);
     }
