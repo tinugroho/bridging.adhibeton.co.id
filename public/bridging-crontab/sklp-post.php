@@ -146,11 +146,13 @@ foreach ($schedule_obj->result as $schedule) {
     //                 ORDER BY `a`.`index_load` DESC';
     $query_loads = 'select a.*, b.bp_name as bp_name FROM `V_BatchSetupTickets` a 
           left join Batching_plant b on a.BP_ID=b.id_bp 
-          where a.index_load > (select ifnull(max(c.ref),(select ifnull(max(d.ref),0) from SKLP_API_Log d where d.task_code=\'' . $schedule->number . '\')) from SKLP_API_Gagal c where c.task_code=\'' . $schedule->number . '\') 
+          where a.index_load >
+          ((select max(ref) as ref from SKLP_API_Log where task_code = \'' . $schedule->number . '\') UNION (select max(ref) as ref from SKLP_API_Gagal where task_code = \'' . $schedule->number . '\') order by ref desc limit 1)
           and (PO_Num=\'' . preg_replace('/\s+/', '', $schedule->number)  . '\' OR Job_Code=\'' . preg_replace('/\s+/', '', $schedule->number) . '\')  
           and upper(a.Other_Code)=\'' . preg_replace('/\s+/', '', strtoupper($schedule->mutu[1]))  . '\' 
           and a.Ticket_Status=\'O\'
           ORDER BY `a`.`index_load` DESC';
+
     $loads = mysqli_query($conmysql, $query_loads);
 
     while ($load = mysqli_fetch_array($loads)) {

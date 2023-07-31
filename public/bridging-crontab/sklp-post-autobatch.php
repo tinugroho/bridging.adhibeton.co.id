@@ -114,26 +114,10 @@ foreach ($schedule_obj->result as $key => $schedule) {
                       left join SKLP_Plant sp on sp.bp_id = t.BP_ID
                   where
                       upper(t.PO_Number) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "'
-                      and t.index_load > (
-                              select
-                                  ifnull(
-                                      max(sag.ref),
-                      (
-                                          select
-                                              ifnull(max(sal.ref), 0)
-                                          from
-                                              SKLP_API_Log sal
-                                          where
-                                              upper(sal.task_code) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "'
-                                      )
-                                  )
-                              from
-                                  SKLP_API_Gagal sag
-                              where
-                                  upper(sag.task_code) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "'
-                          )
-                      ORDER BY
-                          t.index_load DESC";
+                      and t.index_load > 
+                      ((select max(ref) as ref from SKLP_API_Log where upper(task_code) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "') 
+                        UNION 
+                      (select max(ref) as ref from SKLP_API_Gagal where upper(task_code) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "') order by ref desc limit 1)";
 
     $loads = mysqli_query($conmysql, $query_loads);
 
