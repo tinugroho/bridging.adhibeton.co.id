@@ -55,9 +55,7 @@ $response_login = curl_exec($curl_login);
 curl_close($curl_login);
 // echo $response_login, '<br>';
 $login_obj = json_decode($response_login);
-
-// var_dump($response_login);
-
+$result['status'] = !empty($login_obj->result) ? 'SKLP Response' : 'SKLP Not Response';
 
 // ==============================================================================
 
@@ -82,7 +80,7 @@ curl_setopt_array($curl_schedule, array(
         "token": "' . $login_obj->result->global_token . '",
         "model": "project.schedule.line",
         "method": "search_read",
-        "args": [[["scheduled_date", ">=", "' . date('Y-m-d', strtotime('-7 day', strtotime($waktu))) . '"]]], 
+        "args": [[["scheduled_date", ">=", "' . date('Y-m-d', strtotime('-3 day', strtotime($waktu))) . '"]]], 
         "context": {}
     }
 }',
@@ -103,7 +101,7 @@ if (isset($schedule_obj->error)) {
   exit();
 }
 
-$result['schedule'] = $schedule_obj;
+$result['schedule'] = $schedule_obj->result;
 $result['posted'] = [];
 
 foreach ($schedule_obj as $schedule) {
@@ -320,5 +318,5 @@ foreach ($schedule_obj as $schedule) {
   }
 }
 
-header('Content-Type: application/json');
+header('Content-Type: application/json; charset=utf-8');
 echo json_encode($result, JSON_PRETTY_PRINT);
