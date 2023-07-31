@@ -104,7 +104,7 @@ if (isset($schedule_obj->error)) {
 $result['schedule'] = $schedule_obj->result;
 $result['posted'] = [];
 
-foreach ($schedule_obj as $schedule) {
+foreach ($schedule_obj->result as $schedule) {
   if ($schedule->number != false) {
 
     // $query_loads = 'select a.*, b.bp_name  FROM `V_BatchSetupTickets` a 

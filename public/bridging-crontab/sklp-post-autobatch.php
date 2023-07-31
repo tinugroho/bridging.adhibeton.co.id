@@ -88,7 +88,7 @@ if (isset($schedule_obj->error)) {
 
 $result['schedule'] = $schedule_obj->result;
 $result['posted'] = [];
-foreach ($schedule_obj as $key => $schedule) {
+foreach ($schedule_obj->result as $key => $schedule) {
   if ($schedule->number != false) {
     $query_loads = "SELECT BP_Code AS bp_name
         ,Ticket_Id as Ticket_Code
