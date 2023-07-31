@@ -141,6 +141,7 @@ foreach ($schedule_list as $key => $schedule) {
                     t.index_load DESC";
 
   $loads = mysqli_query($conmysql, $query_loads);
+  var_dump($loads);
 
   $result['action'] = 'Tidak menemukan Loading dengan menggunakan TASK CODE yg active';
 
@@ -317,5 +318,5 @@ foreach ($schedule_list as $key => $schedule) {
   }
 }
 
-header('Content-Type: application/json');
-echo json_encode($result, JSON_PRETTY_PRINT);
+// header('Content-Type: application/json');
+// echo json_encode($result, JSON_PRETTY_PRINT);
