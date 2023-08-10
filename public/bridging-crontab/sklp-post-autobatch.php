@@ -8,8 +8,10 @@ $database_ab = "db_autobatch";
 
 $conmysql = mysqli_connect($host_name, $user_name, $password, $database_ab);
 if (mysqli_connect_errno()) {
-  printf("Connect failed: %s\n", mysqli_connect_error());
+  $result['mysql_status'] = "Connect failed: " . mysqli_connect_error();
   exit();
+} else {
+  $result['mysql_status'] = 'Connected';
 }
 
 // =============== Login =========================================
@@ -88,9 +90,9 @@ if (isset($schedule_obj->error)) {
 
 $result['schedule'] = $schedule_obj->result;
 $result['posted'] = [];
+$result['response_posted'] = [];
 foreach ($schedule_obj->result as $key => $schedule) {
-  if ($schedule->number != false) {
-    $query_loads = "SELECT
+  $query_loads = "SELECT
                       t.index_load as index_load,
                       t.BP_Code AS bp_name,
                       t.Ticket_Id as Ticket_Code,
@@ -105,7 +107,8 @@ foreach ($schedule_obj->result as $key => $schedule) {
                       ) as Load_Size,
                       t.Truck as Truck_Code,
                       t.Driver as Driver_Name,
-                      sp.apb_plant_id as BP_ID,
+                      t.BP_ID as BP_ID,
+                      sp.apb_plant_id as apb_plant_id,
                       t.Createdate as RecordDate,
                       jh.Other_Code as Other_Code
                   from
@@ -115,167 +118,166 @@ foreach ($schedule_obj->result as $key => $schedule) {
                   where
                       upper(t.PO_Number) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "'
                       and t.index_load > 
-                      ((select max(ref) as ref from SKLP_API_Log where upper(task_code) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "') 
+                      ((select ifnull(max(ref),0) as ref from SKLP_API_Log where upper(task_code) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "') 
                         UNION 
-                      (select max(ref) as ref from SKLP_API_Gagal where upper(task_code) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "') order by ref desc limit 1)";
+                      (select ifnull(max(ref),0) as ref from SKLP_API_Gagal where upper(task_code) = '" . preg_replace('/\s+/', '', strtoupper($schedule->number))  . "') order by ref desc limit 1)";
 
-    $loads = mysqli_query($conmysql, $query_loads);
+  $loads = mysqli_query($conmysql, $query_loads);
 
-    while ($load = mysqli_fetch_array($loads)) {
-      $plant_id = mysqli_query($conmysql, "select apb_plant_id from SKLP_Plant where bp_id=" . $load['BP_ID']);
-      $plant_id = mysqli_fetch_array($plant_id);
+  while ($load = mysqli_fetch_array($loads)) {
 
-      if (!empty($plant_id[0])) {
-        // get id truck
-        $curl_truck = curl_init();
-        curl_setopt_array($curl_truck, array(
-          CURLOPT_URL => 'https://apb.garudea.com/json-call',
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_ENCODING => '',
-          CURLOPT_MAXREDIRS => 10,
-          CURLOPT_TIMEOUT => 0,
-          CURLOPT_FOLLOWLOCATION => true,
-          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-          CURLOPT_COOKIESESSION => true,
-          CURLOPT_COOKIEFILE =>  __DIR__ . '/sklp_session.txt',
-          CURLOPT_CUSTOMREQUEST => 'POST',
-          CURLOPT_POSTFIELDS => ' {"jsonrpc": "2.0",
-                  "params": {
-                      "token": "' . $login_obj->result->global_token . '",
-                      "model": "apb.truck",
-                      "method": "search_read",
-                      "args": [[["name","=", "' . preg_replace('/\s+/', '', $load['Truck_Code'])  . '"]]],
-                      "context": {}
-                  }
-              }',
-          CURLOPT_HTTPHEADER => array(
-            'Content-Type: application/json',
-          ),
-        ));
+    if (empty($load['apb_plant_id'])) {
+      $query_post = "insert INTO `SKLP_API_Gagal`
+        (`task_code`,`task_description`, `ref`, `args`, `keterangan`, `status`) 
+        VALUES 
+        ('" . $schedule->number . "','" . $schedule->project[1] . "', " . $load['index_load'] . ", '', 'apb_plant_id = " . $load['apb_plant_id'] . " for bp_id => " . $load['BP_ID'] . " tidak ditemukan pada api sklp', 'gagal')";
+      mysqli_query($conmysql, $query_post);
+    } else {
 
-        $response_truck = curl_exec($curl_truck);
-        curl_close($curl_truck);
+      $curl_truck = curl_init();
+      curl_setopt_array($curl_truck, array(
+        CURLOPT_URL => 'https://apb.garudea.com/json-call',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_COOKIESESSION => true,
+        CURLOPT_COOKIEFILE =>  __DIR__ . '/sklp_session.txt',
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS => ' {"jsonrpc": "2.0",
+              "params": {
+                  "token": "' . $login_obj->result->global_token . '",
+                  "model": "apb.truck",
+                  "method": "search_read",
+                  "args": [[["name","=", "' . preg_replace('/\s+/', '', $load['Truck_Code'])  . '"]]],
+                  "context": {}
+              }
+          }',
+        CURLOPT_HTTPHEADER => array(
+          'Content-Type: application/json',
+        ),
+      ));
 
-        $truck_obj = json_decode($response_truck);
+      $response_truck = curl_exec($curl_truck);
+      curl_close($curl_truck);
 
-        if (!empty($truck_obj->result)) {
-          $truck_id = $truck_obj->result[0]->id;
-        } else {
-          $truck_id = 31; // TM036default truck id di master data api T
-        }
+      $truck_obj = json_decode($response_truck);
 
-        // post sklp 
-        // driver masih default belum dinamis
-        $driver = 90; //driver 6
-        $sender = 70; //Admin Batching Plant
-        $args = '{"jsonrpc": "2.0",
-            "params": {
-            "token": "' . $login_obj->result->global_token . '",
-            "model": "apb.delivery",
-            "method": "create",
-            "args": [{
-            "schedule_id": ' . $schedule->id . ',
-            "name": "' . $load['bp_name'] . '-' . $load['Ticket_Code'] . '",
-            "apb_plant_id": ' . $plant_id[0] . ',
-            "date": "' . $load['RecordDate'] . '",
-            "apb_truck_id": ' . $truck_id . ',
-            "driver_id": ' . $driver . ', 
-            "sender_id": ' . $sender . ',
-            "apb_delivery_line": [[0, 0,
-                {
-                    "volume": ' . $load['Load_Size'] . ',
-                    "volume_comm": ' . 0 . ',
-                    "description": "' . ' ' . '"
-                }
-            ]]
-            }],
-            "context": {}
-            }
-          }';
-
-        $curl_post_sklp = curl_init();
-        curl_setopt_array($curl_post_sklp, array(
-          CURLOPT_URL => 'https://apb.garudea.com/json-call',
-          CURLOPT_RETURNTRANSFER => true,
-          CURLOPT_ENCODING => '',
-          CURLOPT_MAXREDIRS => 10,
-          CURLOPT_TIMEOUT => 0,
-          CURLOPT_FOLLOWLOCATION => true,
-          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-          CURLOPT_COOKIESESSION => true,
-          CURLOPT_COOKIEFILE =>  __DIR__ . '/sklp_session.txt',
-          CURLOPT_CUSTOMREQUEST => 'POST',
-          CURLOPT_POSTFIELDS => $args,
-          CURLOPT_HTTPHEADER => array(
-            'Content-Type: application/json',
-          ),
-        ));
-
-        $response_post_sklp = curl_exec($curl_post_sklp);
-
-        curl_close($curl_post_sklp);
-
-        $post_sklp_obj = json_decode($response_post_sklp);
-        if (isset($post_sklp_obj->result)) {
-          $submit = '
-            {"jsonrpc": "2.0",
-            "params": {
-            "token": "af7eec1b5c53d61eb91392a6cf16d8241ec235391253d9242f68d5af9b12c351",
-            "model": "apb.delivery",
-            "method": "action_submit",
-            "args": [' . $post_sklp_obj->result . '], 
-            "context": {}
-            }
-            }';
-
-          $curl_post_submit = curl_init();
-          curl_setopt_array($curl_post_submit, array(
-            CURLOPT_URL => 'https://apb.garudea.com/json-call',
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_ENCODING => '',
-            CURLOPT_MAXREDIRS => 10,
-            CURLOPT_TIMEOUT => 0,
-            CURLOPT_FOLLOWLOCATION => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-            CURLOPT_COOKIESESSION => true,
-            CURLOPT_COOKIEFILE =>  __DIR__ . '/sklp_session.txt',
-            CURLOPT_CUSTOMREQUEST => 'POST',
-            CURLOPT_POSTFIELDS => $submit,
-            CURLOPT_HTTPHEADER => array(
-              'Content-Type: application/json',
-            ),
-          ));
-
-          $response_post_submit = curl_exec($curl_post_submit);
-
-          curl_close($curl_post_submit);
-        }
-
-        if (isset($post_sklp_obj->error)) {
-          $query_post = "insert INTO `SKLP_API_Gagal`
-            (`task_code`,`task_description`, `ref`, `args`, `keterangan`, `status`) 
-            VALUES 
-            ('" . $schedule->number . "','" . $schedule->project[1] . "', " . $load['index_load'] . ", '" . $args . "', '" . $post_sklp_obj->error->data->message . "', 'gagal')";
-
-          mysqli_query($conmysql, $query_post);
-        } else if (isset($post_sklp_obj->result)) {
-
-          $query_post = "insert INTO `SKLP_API_Log`
-            (`task_code`,`task_description`, `ref`, `args`, `keterangan`, `status`) 
-            VALUES 
-            ('" . $schedule->number . "','" . $schedule->project[1] . "', " . $load['index_load'] . ", '" . $args . "', 'sukses', 'sukses')";
-
-          mysqli_query($conmysql, $query_post);
-        }
+      if (!empty($truck_obj->result)) {
+        $truck_id = $truck_obj->result[0]->id;
       } else {
+        $truck_id = 31; // TM036default truck id di master data api T
+      }
+
+      // post sklp 
+      // driver masih default belum dinamis
+      $driver = 90; //driver 6
+      $sender = 70; //Admin Batching Plant
+      $args = '{"jsonrpc": "2.0",
+        "params": {
+        "token": "' . $login_obj->result->global_token . '",
+        "model": "apb.delivery",
+        "method": "create",
+        "args": [{
+        "schedule_id": ' . $schedule->id . ',
+        "name": "' . $load['bp_name'] . '-' . $load['Ticket_Code'] . '",
+        "apb_plant_id": ' . $load['apb_plant_id'] . ',
+        "date": "' . $load['RecordDate'] . '",
+        "apb_truck_id": ' . $truck_id . ',
+        "driver_id": ' . $driver . ', 
+        "sender_id": ' . $sender . ',
+        "apb_delivery_line": [[0, 0,
+            {
+                "volume": ' . $load['Load_Size'] . ',
+                "volume_comm": ' . 0 . ',
+                "description": "' . ' ' . '"
+            }
+        ]]
+        }],
+        "context": {}
+        }
+      }';
+
+      $curl_post_sklp = curl_init();
+      curl_setopt_array($curl_post_sklp, array(
+        CURLOPT_URL => 'https://apb.garudea.com/json-call',
+        CURLOPT_RETURNTRANSFER => true,
+        CURLOPT_ENCODING => '',
+        CURLOPT_MAXREDIRS => 10,
+        CURLOPT_TIMEOUT => 0,
+        CURLOPT_FOLLOWLOCATION => true,
+        CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+        CURLOPT_COOKIESESSION => true,
+        CURLOPT_COOKIEFILE =>  __DIR__ . '/sklp_session.txt',
+        CURLOPT_CUSTOMREQUEST => 'POST',
+        CURLOPT_POSTFIELDS => $args,
+        CURLOPT_HTTPHEADER => array(
+          'Content-Type: application/json',
+        ),
+      ));
+
+      $response_post_sklp = curl_exec($curl_post_sklp);
+
+      curl_close($curl_post_sklp);
+
+      $post_sklp_obj = json_decode($response_post_sklp);
+      if (isset($post_sklp_obj->result)) {
+        $submit = '
+        {"jsonrpc": "2.0",
+        "params": {
+        "token": ' . $login_obj->result->global_token . ',
+        "model": "apb.delivery",
+        "method": "action_submit",
+        "args": [' . $post_sklp_obj->result . '], 
+        "context": {}
+        }
+        }';
+
+        $curl_post_submit = curl_init();
+        curl_setopt_array($curl_post_submit, array(
+          CURLOPT_URL => 'https://apb.garudea.com/json-call',
+          CURLOPT_RETURNTRANSFER => true,
+          CURLOPT_ENCODING => '',
+          CURLOPT_MAXREDIRS => 10,
+          CURLOPT_TIMEOUT => 0,
+          CURLOPT_FOLLOWLOCATION => true,
+          CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
+          CURLOPT_COOKIESESSION => true,
+          CURLOPT_COOKIEFILE =>  __DIR__ . '/sklp_session.txt',
+          CURLOPT_CUSTOMREQUEST => 'POST',
+          CURLOPT_POSTFIELDS => $submit,
+          CURLOPT_HTTPHEADER => array(
+            'Content-Type: application/json',
+          ),
+        ));
+
+        $response_post_submit = curl_exec($curl_post_submit);
+
+        curl_close($curl_post_submit);
+
+        $submit_response = json_decode($response_post_submit);
+      }
+
+      if (isset($post_sklp_obj->error)) {
         $query_post = "insert INTO `SKLP_API_Gagal`
-          (`task_code`,`task_description`, `ref`, `args`, `keterangan`, `status`) 
-          VALUES 
-          ('" . $schedule->number . "','" . $schedule->project[1] . "', " . $load['index_load'] . ", '', 'BP ID " . $load['BP_ID'] . " tidak ada di SKLP_Plant', 'gagal')";
+        (`task_code`,`task_description`, `ref`, `args`, `keterangan`, `status`) 
+        VALUES 
+        ('" . $schedule->number . "','" . $schedule->project[1] . "', " . $load['index_load'] . ", '" . $args . "', '" . $post_sklp_obj->error->data->message . "', 'gagal')";
+
+        mysqli_query($conmysql, $query_post);
+      } else if (isset($post_sklp_obj->result)) {
+        $query_post = "insert INTO `SKLP_API_Log`
+        (`task_code`,`task_description`, `ref`, `args`, `keterangan`, `status`) 
+        VALUES 
+        ('" . $schedule->number . "','" . $schedule->project[1] . "', " . $load['index_load'] . ", '" . $args . "', 'sukses', 'sukses')";
+
         mysqli_query($conmysql, $query_post);
       }
+
       $posted = [
-        'sklp_bp_id'     => $plant_id[0],
+        'sklp_bp_id'     => $load['apb_plant_id'],
         'sklp_driver_id' => $driver,
         'sklp_sender_id' => $sender,
         'bp_name'        => $load['bp_name'],
@@ -287,6 +289,14 @@ foreach ($schedule_obj->result as $key => $schedule) {
         'query_post_save' => strval($query_post),
       ];
       array_push($result['posted'], $posted);
+
+      $response_result = [
+        'query_loads' => strval($query_loads),
+        'ticket_number' => $load['Ticket_Code'],
+        'create_delivery' => isset($post_sklp_obj->result) ? 'sukses' : $post_sklp_obj->error->data->message,
+        'submit_delivery' => $submit_response,
+      ];
+      array_push($result['response_posted'], $response_result);
     }
   }
 }
