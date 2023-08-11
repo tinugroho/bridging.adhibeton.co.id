@@ -227,7 +227,7 @@ foreach ($schedule_obj->result as $key => $schedule) {
         $submit = '
         {"jsonrpc": "2.0",
         "params": {
-        "token": ' . $login_obj->result->global_token . ',
+        "token": "' . $login_obj->result->global_token . '",
         "model": "apb.delivery",
         "method": "action_submit",
         "args": [' . $post_sklp_obj->result . '], 
@@ -293,8 +293,8 @@ foreach ($schedule_obj->result as $key => $schedule) {
       $response_result = [
         'query_loads' => strval($query_loads),
         'ticket_number' => $load['Ticket_Code'],
-        'create_delivery' => isset($post_sklp_obj->result) ? 'sukses' : $post_sklp_obj->error->data->message,
-        'submit_delivery' => $submit_response,
+        'create_delivery' => isset($post_sklp_obj->result) ? $post_sklp_obj->result  : $post_sklp_obj->error->data->message,
+        'submit_delivery' => $submit_response->result,
       ];
       array_push($result['response_posted'], $response_result);
     }
